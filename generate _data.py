@@ -19,21 +19,24 @@ def generate_data(data_format, num_records):
     fake = Faker()
     data = []
 
-    # Split the data format string into fields
-    fields = data_format.split(",")
+    if isintance(data_format, dict):
+        fields = data_format.keys()
+    elif isintance(data_format, list):
+        fields = data_format.split(",")
+
+    # Use a whitelist approach for secure method calls
+    allowed_methods = ["name", "address", "email",  "ssn", "city", "state", "country", "date_of_birth", "job", "text" ]  # Example whitelist
 
     # Generate data for each record
     for _ in range(num_records):
         record = {}
+        fake = Faker()  # Create a Faker instance
         for field in fields:
-            # Use Faker methods based on field type (e.g., name, address)
-            if field == "name":
-                record[field] = fake.name()
-            elif field == "address":
-                record[field] = fake.address()
-            # Add more cases for other data types as needed
+            if field in allowed_methods:
+                # Use attribute access on the Faker instance
+                record[field] = getattr(fake, field)()
             else:
-                raise ValueError(f"Unsupported field type: {field}")
+                raise ValueError(f"Field '{field}' not allowed for security reasons.")
         data.append(record)
 
     return data
